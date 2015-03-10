@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,9 +15,22 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.SDKInitializer;
+import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.MapStatusUpdate;
+import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
+import com.baidu.location.LocationClientOption.LocationMode;
+import com.baidu.mapapi.map.MyLocationConfiguration;
+import com.baidu.mapapi.map.MyLocationData;
+import com.baidu.mapapi.model.LatLng;
 import com.socialmap.yy.travelbox.arclibrary.ArcMenu;
 import com.socialmap.yy.travelbox.fragment.SOSDialogFragment;
 import com.socialmap.yy.travelbox.service.AccountService;
@@ -24,6 +38,12 @@ import com.socialmap.yy.travelbox.service.AccountService;
 
 public class MainActivity extends Activity {
     MapView mMapView = null;
+    public LocationClient mLocationClient;
+    public MyLocationListener mMyLocationListener;
+    private BaiduMap mBaiduMap;
+    public TextView mLocationResult,logMsg;
+    boolean isFirstLoc = true;// 是否是第一次定位
+    BitmapDescriptor mCurrentMarker;
     // Service
     private AccountService.MyBinder binder;
     private ServiceConnection conn = new ServiceConnection() {
@@ -45,8 +65,25 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         SDKInitializer.initialize(getApplicationContext());
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        //百度地图
+        mLocationClient = new LocationClient(this.getApplicationContext());
         setContentView(R.layout.activity_main);
         mMapView = (MapView) findViewById(R.id.bmapView);
+        mBaiduMap = mMapView.getMap();
+        mCurrentMarker = null;
+        mBaiduMap.setMyLocationEnabled(true);
+
+        //定位SDK
+        mMyLocationListener = new MyLocationListener();
+        mLocationClient = new LocationClient(this);
+        mLocationClient.registerLocationListener( mMyLocationListener);
+        LocationClientOption option = new LocationClientOption();
+        option.setLocationMode(LocationMode.Hight_Accuracy);
+        //option.setOpenGps(true);// 开启GPS
+        option.setCoorType("bd09ll"); // 编码有三种,gcj02  bd09   bd0911
+        option.setScanSpan(1000);//这个是设置定位间隔时间，单位ms
+        mLocationClient.setLocOption(option);
+        mLocationClient.start();
 
         ImageButton sos = (ImageButton) findViewById(R.id.sos);
 
@@ -75,7 +112,11 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         //在activity执行onDestroy时执行mMapView.onDestroy()，实现地图生命周期管理
+        mLocationClient.stop();
+        mBaiduMap.setMyLocationEnabled(false);
         mMapView.onDestroy();
+        mMapView = null;
+        super.onDestroy();
     }
     @Override
     protected void onResume() {
@@ -96,8 +137,75 @@ public class MainActivity extends Activity {
         return true;
     }
 
+// 定位监听
+public class MyLocationListener implements BDLocationListener {
+
+    @Override
+    public void onReceiveLocation(BDLocation location) {
 
 
+        if (location == null || mMapView == null)
+            return;
+        MyLocationData locData = new MyLocationData.Builder()
+                .accuracy(location.getRadius())
+
+                .direction(100).latitude(location.getLatitude())
+                .longitude(location.getLongitude()).build();
+        mBaiduMap.setMyLocationData(locData);
+        if (isFirstLoc) {
+            isFirstLoc = false;
+            LatLng ll = new LatLng(location.getLatitude(),
+                    location.getLongitude());
+            MapStatusUpdate u = MapStatusUpdateFactory.newLatLng(ll);
+            mBaiduMap.animateMapStatus(u);
+        }
+        //Receive Location
+        StringBuffer sb = new StringBuffer(256);
+        sb.append("time : ");
+        sb.append(location.getTime());
+        sb.append("\nerror code : ");
+        sb.append(location.getLocType());
+        sb.append("\nlatitude : ");
+        sb.append(location.getLatitude());
+        sb.append("\nlontitude : ");
+        sb.append(location.getLongitude());
+        sb.append("\nradius : ");
+        sb.append(location.getRadius());
+        if (location.getLocType() == BDLocation.TypeGpsLocation){
+            sb.append("\nspeed : ");
+            sb.append(location.getSpeed());
+            sb.append("\nsatellite : ");
+            sb.append(location.getSatelliteNumber());
+            sb.append("\ndirection : ");
+            sb.append("\naddr : ");
+            sb.append(location.getAddrStr());
+            sb.append(location.getDirection());
+        } else if (location.getLocType() == BDLocation.TypeNetWorkLocation){
+            sb.append("\naddr : ");
+            sb.append(location.getAddrStr());
+
+            sb.append("\noperationers : ");
+            sb.append(location.getOperators());
+        }
+        //logMsg(sb.toString());  //TODO 这就是把经纬度传出来的代码
+        Log.i("BaiduLocationApiDem", sb.toString());
+    }
+
+    //TODO 这个就是接收经纬度的。对应的是189行
+    /**public void logMsg(String str) {
+     try {
+     if (mLocationResult != null)
+     mLocationResult.setText(str);  //TODO locationresult就是定位结果，log里面也能查到。这里用的是TEXTVIEW显示，而我们需要的是服务器
+     } catch (Exception e) {
+     e.printStackTrace();
+     }
+     }**/
+
+
+    public void onReceivePoi(BDLocation poiLocation) {
+    }
+
+}
     //主界面中菜单点击事件响应
     @Override
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
