@@ -43,6 +43,7 @@ public class MainActivity extends Activity {
     private BaiduMap mBaiduMap;
     public TextView mLocationResult,logMsg;
     boolean isFirstLoc = true;// 是否是第一次定位
+    private boolean isRequest = false;//手动触发定位请求
     BitmapDescriptor mCurrentMarker;
     // Service
     private AccountService.MyBinder binder;
@@ -81,9 +82,30 @@ public class MainActivity extends Activity {
         option.setLocationMode(LocationMode.Hight_Accuracy);
         //option.setOpenGps(true);// 开启GPS
         option.setCoorType("bd09ll"); // 编码有三种,gcj02  bd09   bd0911
-        option.setScanSpan(1000);//这个是设置定位间隔时间，单位ms
+        option.setScanSpan(2000);//这个是设置定位间隔时间，单位ms
         mLocationClient.setLocOption(option);
         mLocationClient.start();
+        //手动定位
+        /**  selfloc = (ImageButton)findViewById(R.id.locationself);
+         View.OnClickListener onClickListener = new View.OnClickListener(){
+        @Override
+        public void onClick(View view) {
+        if (view.equals(selfloc)) {
+
+        requestLocation();}
+        }
+        };
+         selfloc.setOnClickListener(onClickListener);**/  //TODO 方法一
+
+//TODO 方法二
+        ((ImageButton) findViewById(R.id.locationself)).setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                requestLocation();
+            }
+        });
+
 
         ImageButton sos = (ImageButton) findViewById(R.id.sos);
 
@@ -152,8 +174,9 @@ public class MyLocationListener implements BDLocationListener {
                 .direction(100).latitude(location.getLatitude())
                 .longitude(location.getLongitude()).build();
         mBaiduMap.setMyLocationData(locData);
-        if (isFirstLoc) {
+        if (isFirstLoc|| isRequest) {
             isFirstLoc = false;
+            isRequest = false;
             LatLng ll = new LatLng(location.getLatitude(),
                     location.getLongitude());
             MapStatusUpdate u = MapStatusUpdateFactory.newLatLng(ll);
@@ -206,6 +229,19 @@ public class MyLocationListener implements BDLocationListener {
     }
 
 }
+    /**
+     * 手动请求定位的方法
+     */
+    public void requestLocation() {
+        isRequest = true;
+
+        if(mLocationClient != null && mLocationClient.isStarted()){
+
+            mLocationClient.requestLocation();
+        }else{
+            Log.d("log", "locClient is null or not started");
+        }
+    }
     //主界面中菜单点击事件响应
     @Override
     public boolean onMenuItemSelected(int featureId, MenuItem item) {

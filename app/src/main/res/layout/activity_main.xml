@@ -1,4 +1,4 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:arc="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -14,19 +14,32 @@
     <EditText
             android:id="@+id/find"
             style="@style/TravelBox.main.EditText.Style"
-            android:layout_width="273dp"
+            android:layout_width="230dp"
             android:layout_height="wrap_content"
             android:hint="@string/find"
             android:layout_marginTop="1dp"
             android:layout_marginRight="10dp"
-            android:layout_gravity="center_horizontal|top" />
+            android:layout_centerHorizontal="true"/>
+    <ImageButton
+        android:id="@+id/locationself"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="#00000000"
+        android:layout_marginBottom="75dip"
+        android:layout_marginLeft="15dp"
+        android:src ="@drawable/locationself" />
 
     <ImageButton
             android:id="@+id/sos"
-            android:layout_width="72dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/sos"
-        android:layout_gravity="left|bottom" />
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="100dip"
+        android:background="#00000000"/>
 
     <com.socialmap.yy.travelbox.arclibrary.ArcMenu
         android:id="@+id/arc_menu_2"
@@ -35,10 +48,11 @@
         arc:fromDegrees="@dimen/menuFromDegrees"
         arc:toDegrees="@dimen/menuToDegrees"
         arc:childSize="@dimen/menuChildSize"
-        android:layout_gravity="center_horizontal|bottom" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="60dip"/>
 
 
-</FrameLayout>
+</RelativeLayout>
 
 
 
