@@ -33,9 +33,18 @@ public class AllTeamActivity extends Activity implements View.OnTouchListener{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_team);
         button = (ImageView)findViewById(R.id.avatar);
-
+        backbutton = (ImageButton)findViewById(R.id.backbutton);
         listView = (ListView)findViewById(R.id.listView);
+        backbutton.setOnClickListener(new ImageButton.OnClickListener(){
+            //TODO 跳转
+            public void onClick(View view){
+                Intent intent = new Intent();
+                intent.setClass(AllTeamActivity.this,MainActivity.class);
+                startActivity(intent);
+                finish();
 
+            }
+        });
         String[] AllTeam = new String[]{
 
                 "名称：",

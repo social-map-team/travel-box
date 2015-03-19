@@ -13,16 +13,15 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="#fff"
         android:textStyle="bold" />
-
     <ImageButton
-        android:id="@+id/local"
+        android:id="@+id/imageButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:layout_marginRight="10dp"
+        android:layout_marginRight="8dp"
         android:background="@null"
-        android:src="@android:drawable/ic_menu_myplaces" />
+        android:src="@android:drawable/ic_menu_add" />
     <ImageButton
         android:id="@+id/cal"
         android:layout_width="35dp"

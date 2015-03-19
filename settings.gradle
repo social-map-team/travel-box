@@ -1,1 +1,1 @@
-include ':app', 'qqEmoji-lib', ':app-debug', ':app2'
+include ':app'
